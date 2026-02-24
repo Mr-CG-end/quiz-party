@@ -1,0 +1,28 @@
+@use '@/assets/styles/functions.scss' as *;
+
+.header {
+  display: flex;
+  padding: rem(24px);
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--gray-200);
+
+  &__text {
+    font-weight: 700;
+    color: var(--black);
+    font-size: rem(16px);
+  }
+
+  &__link {
+    font-weight: 700;
+    color: var(--white);
+    font-size: rem(14px);
+    border-radius: rem(8px);
+    padding: rem(16px) rem(24px);
+    background-color: var(--primary);
+  }
+}
+
+.leaderboard {
+  margin-top: rem(32px); // 56px - 24px (leaderboard padding) = 32px
+}
