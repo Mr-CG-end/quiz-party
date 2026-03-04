@@ -26,17 +26,18 @@
   </DefaultLayout>
 </template>
 
-<script>
+<script lang="ts">
 import DefaultLayout from '@/layouts/DefaultLayout/index.vue';
 
 // Mock Api
 import quizzesList from '@/assets/mock/quizzes.json';
 
 // utils
-import { shuffleArray } from '@/utils/index.js';
+import { shuffleArray } from '@/utils/index';
 
 import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import type { Quiz } from '@/types';
 
 export default {
   name: 'QuizView',
@@ -48,13 +49,13 @@ export default {
   setup() {
     const step = ref(0);
     const width = ref(100);
-    const timer = ref(null);
-    const statuses = ref([]);
+    const timer = ref<ReturnType<typeof setTimeout> | null>(null);
+    const statuses = ref<string[]>([]);
 
     const router = useRouter();
 
-    const quizzes = computed(() => {
-      return shuffleArray(quizzesList);
+    const quizzes = computed<Quiz[]>(() => {
+      return shuffleArray(quizzesList as Quiz[]);
     });
 
     const quiz = computed(() => {
@@ -74,8 +75,10 @@ export default {
     });
 
     const stopTimer = () => {
-      clearTimeout(timer.value);
-      timer.value = null;
+      if (timer.value) {
+        clearTimeout(timer.value as any);
+        timer.value = null;
+      }
     };
 
     const startTimer = () => {
@@ -129,7 +132,7 @@ export default {
       statuses.value[step.value] = 'timeout';
     };
 
-    const checkAnswer = (answerId) => {
+    const checkAnswer = (answerId: number) => {
       stopTimer();
 
       quiz.value.currectAnswer === answerId ? onWin() : onLose();
@@ -137,7 +140,7 @@ export default {
       changeStep();
     };
 
-    const counterClasses = (counter) => {
+    const counterClasses = (counter: number) => {
       if (statuses.value[counter]) {
         return `quiz-counters__couter quiz-counters__couter--${statuses.value[counter]}`;
       }

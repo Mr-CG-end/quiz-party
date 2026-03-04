@@ -1,4 +1,4 @@
-function shuffleArray(array) {
+function shuffleArray<T>(array: T[]): T[] {
   let curId = array.length;
 
   while (curId) {

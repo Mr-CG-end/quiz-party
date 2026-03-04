@@ -38,7 +38,7 @@ $ npm run dev
 
 ## ✏ 待办事项
 
-- [ ] 1. vite升级（0.5d） + TS 升级 （1.5d）
+- [x] 1. vite升级（0.5d） + TS 升级 （1.5d）
 - [ ] 2. 引入 axios， 进行封装，mock 改成 apifox,联调成功（1d）
 - [ ] 3. 用户身份输入和角色绑定 + 系统hook封装1+ （1.5d）
 - [ ] 4. Sass 改为 tailwindCSS （2d）

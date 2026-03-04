@@ -8,7 +8,7 @@
   </Transition>
 </template>
 
-<script>
+<script lang="ts">
 import { toRef, watch } from 'vue';
 
 export default {
@@ -16,8 +16,8 @@ export default {
 
   props: {
     show: {
-      type: String,
-      default: true,
+      type: Boolean,
+      default: false,
     },
   },
 
@@ -28,7 +28,7 @@ export default {
       emit('on-close');
     };
 
-    const onBackgroundClicked = (e) => {
+    const onBackgroundClicked = (e: MouseEvent) => {
       const modalWrapper = document.querySelector('.modal-wrapper');
 
       if (e.target === modalWrapper) {
@@ -36,13 +36,13 @@ export default {
       }
     };
 
-    const onEscapeKeyClicked = (e) => {
+    const onEscapeKeyClicked = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    const watchHandler = (canShow) => {
+    const watchHandler = (canShow: boolean) => {
       if (canShow) {
         document.addEventListener('keyup', onEscapeKeyClicked);
         document.addEventListener('click', onBackgroundClicked);

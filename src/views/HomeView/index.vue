@@ -9,11 +9,12 @@
   </DefaultLayout>
 </template>
 
-<script>
+<script lang="ts">
 import DefaultLayout from '@/layouts/DefaultLayout/index.vue';
 import VLeaderboard from '@/components/VLeaderboard/index.vue';
 
 import { ref } from 'vue';
+import type { LeaderboardItem } from '@/types';
 
 export default {
   name: 'HomeView',
@@ -24,8 +25,10 @@ export default {
   },
 
   setup() {
-    const leaderboard = ref([]);
-    leaderboard.value = localStorage.getItem('leaderboard') ? JSON.parse(localStorage.getItem('leaderboard')) : [];
+    const leaderboard = ref<LeaderboardItem[]>([]);
+    leaderboard.value = localStorage.getItem('leaderboard')
+      ? JSON.parse(localStorage.getItem('leaderboard') || '[]')
+      : [];
 
     return { leaderboard };
   },

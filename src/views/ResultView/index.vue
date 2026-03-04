@@ -2,14 +2,14 @@
   <VModal :show="isModalOpen" @on-close="closeModal">
     <div class="character">
       <div class="character__avatar-box">
-        <img :src="character.image" :alt="character.name" class="character__avatar" />
+        <img :src="character?.image" :alt="character?.name" class="character__avatar" />
       </div>
 
-      <span class="character__name">{{ character.name }}</span>
+      <span class="character__name">{{ character?.name }}</span>
 
       <p class="character__summary">
-        您成功获得了角色 <span class="character__summary-bold">«{{ character.name }}»</span>！
-        {{ character.summary }}
+        您成功获得了角色 <span class="character__summary-bold">«{{ character?.name }}»</span>！
+        {{ character?.summary }}
       </p>
     </div>
 
@@ -27,7 +27,7 @@
   </DefaultLayout>
 </template>
 
-<script>
+<script lang="ts">
 import VModal from '@/components/VModal/index.vue';
 import DefaultLayout from '@/layouts/DefaultLayout/index.vue';
 
@@ -36,6 +36,7 @@ import characters from '@/assets/mock/characters.json';
 
 import { ref, computed, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
+import type { Character, LeaderboardItem } from '@/types';
 
 export default {
   name: 'ResultView',
@@ -52,12 +53,12 @@ export default {
     const router = useRouter();
 
     const character = computed(() => {
-      return characters.find((c) => score.value >= c.minimumScore);
+      return (characters as Character[]).find((c) => score.value >= c.minimumScore);
     });
 
     onBeforeMount(() => {
       if (localStorage.getItem('score')) {
-        score.value = JSON.parse(localStorage.getItem('score'));
+        score.value = JSON.parse(localStorage.getItem('score') || '0');
       }
     });
 
@@ -69,21 +70,22 @@ export default {
       isModalOpen.value = false;
     };
 
-    const updateLeaderboard = (character) => {
-      let leaderboard = [];
+    const updateLeaderboard = (newEntry: LeaderboardItem) => {
+      let leaderboard: LeaderboardItem[] = [];
 
       if (localStorage.getItem('leaderboard')) {
-        leaderboard = JSON.parse(localStorage.getItem('leaderboard'));
+        leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
       }
 
-      leaderboard.push(character);
+      leaderboard.push(newEntry);
       localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
     };
 
     const onCharacterSubmited = () => {
+      if (!character.value) return;
       updateLeaderboard({
-        image: character.value.image,
-        name: character.value.name,
+        image: character.value?.image,
+        name: character.value?.name,
         score: score.value,
       });
 

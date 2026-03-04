@@ -21,13 +21,15 @@
   </section>
 </template>
 
-<script>
+<script lang="ts">
+import type { LeaderboardItem } from '@/types';
+
 export default {
   name: 'VLeaderboard',
 
   props: {
     leaderboard: {
-      type: Array,
+      type: Array as () => LeaderboardItem[],
       required: true,
     },
   },
