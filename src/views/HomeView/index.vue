@@ -1,38 +1,64 @@
 <template>
   <DefaultLayout>
     <header class="header">
-      <span class="header__text">准备好来一场小测验了吗？</span>
-      <RouterLink class="header__link" to="/quiz">开始新测验</RouterLink>
+      <span class="header__text"> {{ isLogined ? `欢迎回来，${currentUser}` : '准备好来一场小测验了吗？' }}</span>
+      <button class="header__link" @click="handleStartClick">开始新测验</button>
     </header>
 
     <VLeaderboard :leaderboard="leaderboard" class="leaderboard" />
+    <UserModal :show="showLogin" @start="onUserModalStart" />
   </DefaultLayout>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import DefaultLayout from '@/layouts/DefaultLayout/index.vue';
 import VLeaderboard from '@/components/VLeaderboard/index.vue';
+import UserModal from '@/components/UserModal/index.vue';
 
-import { ref } from 'vue';
-import type { LeaderboardItem } from '@/types';
+import { ref, onMounted } from 'vue';
 
-export default {
+import { useUser } from '@/hooks/useUser';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useRouter } from 'vue-router';
+
+defineOptions({
   name: 'HomeView',
+});
 
-  components: {
-    VLeaderboard,
-    DefaultLayout,
-  },
+const router = useRouter();
+const showLogin = ref(false);
 
-  setup() {
-    const leaderboard = ref<LeaderboardItem[]>([]);
-    leaderboard.value = localStorage.getItem('leaderboard')
-      ? JSON.parse(localStorage.getItem('leaderboard') || '[]')
-      : [];
+const { isLogined, currentUser } = useUser();
+const { leaderboard, fetchLeaderboard } = useLeaderboard();
 
-    return { leaderboard };
-  },
+onMounted(() => {
+  fetchLeaderboard();
+});
+
+/**
+ * 任务 A: 处理“开始测验”点击事件
+ * 逻辑：
+ * 1. 判断 isLogined.value
+ * 2. 如果已登录，直接 router.push('/quiz')
+ * 3. 如果没登录，让 showLogin.value 变成 true
+ */
+const handleStartClick = () => {
+  if (isLogined.value) {
+    router.push('/quiz');
+  } else {
+    showLogin.value = true;
+  }
+};
+/**
+ * 任务 B: 处理起名弹窗成功的事件 (@start)
+ * 逻辑：
+ * 1. 关闭弹窗 (showLogin.value = false)
+ * 2. 跳转测验页 (router.push('/quiz'))
+ */
+const onUserModalStart = () => {
+  showLogin.value = false;
+  router.push('/quiz');
 };
 </script>
 
-<style src="./HomeView.scss" lang="scss" sciped />
+<style src="./HomeView.scss" lang="scss" scoped />

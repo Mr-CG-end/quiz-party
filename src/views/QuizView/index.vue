@@ -6,160 +6,91 @@
   </Transition>
 
   <DefaultLayout class="quiz-view">
-    <div class="timeout" :style="`width: ${width}%`"></div>
-
-    <h1 class="quiz-view__title">{{ quiz.title }}</h1>
-
-    <div class="quizzes quiz-view__quizzes">
-      <template v-for="answer in answers" :key="answer.id">
-        <div class="quiz" @click="checkAnswer(answer.id)">
-          <span class="quiz__title">{{ answer.title }}</span>
-        </div>
-      </template>
+    <div v-if="isLoading" class="quiz-view__loading">
+      <div class="loading-spinner"></div>
+      <span>加载中...</span>
     </div>
 
-    <div class="quiz-counters">
-      <template v-for="counter in quizzes.length" :key="counter">
-        <span :class="counterClasses(counter - 1)" />
-      </template>
+    <div v-else>
+      <div class="timeout" :style="`width: ${width}%`"></div>
+
+      <h1 class="quiz-view__title">{{ currentQuiz?.title }}</h1>
+
+      <div class="quizzes quiz-view__quizzes" :style="isLocked ? 'pointer-events: none;' : ''">
+        <template v-for="answer in shuffledAnswers" :key="answer.id">
+          <div class="quiz" @click="checkAnswer(answer.id)">
+            <span class="quiz__title">{{ answer.title }}</span>
+          </div>
+        </template>
+      </div>
+
+      <div class="quiz-counters">
+        <template v-for="counter in quizzesList.length" :key="counter">
+          <span :class="counterClasses(counter - 1)" />
+        </template>
+      </div>
     </div>
   </DefaultLayout>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import DefaultLayout from '@/layouts/DefaultLayout/index.vue';
 
 // Mock Api
-import quizzesList from '@/assets/mock/quizzes.json';
+import { getQuizzes } from '@/api/quiz';
 
 // utils
 import { shuffleArray } from '@/utils/index';
 
-import { ref, computed, watch, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
 import type { Quiz } from '@/types';
+import { useQuiz } from '@/hooks/useQuiz';
 
-export default {
+defineOptions({
   name: 'QuizView',
+});
 
-  components: {
-    DefaultLayout,
-  },
+const quizzesList = ref<Quiz[]>([]);
+const isLoading = ref(true);
 
-  setup() {
-    const step = ref(0);
-    const width = ref(100);
-    const timer = ref<ReturnType<typeof setTimeout> | null>(null);
-    const statuses = ref<string[]>([]);
+// hooks
+const { step, width, statuses, currentQuiz, isLocked, checkAnswer, startTimer } = useQuiz(quizzesList);
 
-    const router = useRouter();
+const statusText = computed(() => {
+  if (!currentQuiz.value) return '';
+  if (statuses.value[step.value] === 'timeout') {
+    return '时间到了！';
+  }
 
-    const quizzes = computed<Quiz[]>(() => {
-      return shuffleArray(quizzesList as Quiz[]);
-    });
+  return statuses.value[step.value] === 'win' ? currentQuiz.value.response.win : currentQuiz.value.response.lose;
+});
 
-    const quiz = computed(() => {
-      return quizzes.value[step.value];
-    });
+const counterClasses = (counter: number) => {
+  if (statuses.value[counter]) {
+    return `quiz-counters__couter quiz-counters__couter--${statuses.value[counter]}`;
+  }
 
-    const answers = computed(() => {
-      return shuffleArray(quiz.value.items);
-    });
-
-    const statusText = computed(() => {
-      if (statuses.value[step.value] === 'timeout') {
-        return '时间到了！';
-      }
-
-      return statuses.value[step.value] === 'win' ? quiz.value.response.win : quiz.value.response.lose;
-    });
-
-    const stopTimer = () => {
-      if (timer.value) {
-        clearTimeout(timer.value as any);
-        timer.value = null;
-      }
-    };
-
-    const startTimer = () => {
-      if (width.value <= 0) {
-        return stopTimer();
-      }
-
-      width.value -= 1;
-      timer.value = setTimeout(startTimer, 100);
-    };
-
-    const calculateScore = () => {
-      let score = 0;
-
-      for (const status of statuses.value) {
-        if (status === 'win') score += 100;
-      }
-
-      const timeLeft = width.value / 10;
-      const finalScore = Math.floor(score * timeLeft);
-
-      return finalScore;
-    };
-
-    const changeStep = () => {
-      setTimeout(() => {
-        width.value = 100;
-
-        // Check if next step is available or not
-        if (step.value + 1 > quizzes.value.length - 1) {
-          localStorage.setItem('score', JSON.stringify(calculateScore()));
-
-          return router.push('/result');
-        }
-
-        step.value += 1;
-
-        startTimer();
-      }, 3000);
-    };
-
-    const onWin = () => {
-      statuses.value[step.value] = 'win';
-    };
-
-    const onLose = () => {
-      statuses.value[step.value] = 'lose';
-    };
-
-    const onTimeout = () => {
-      statuses.value[step.value] = 'timeout';
-    };
-
-    const checkAnswer = (answerId: number) => {
-      stopTimer();
-
-      quiz.value.currectAnswer === answerId ? onWin() : onLose();
-
-      changeStep();
-    };
-
-    const counterClasses = (counter: number) => {
-      if (statuses.value[counter]) {
-        return `quiz-counters__couter quiz-counters__couter--${statuses.value[counter]}`;
-      }
-
-      return `quiz-counters__couter quiz-counters__couter--${counter === step.value ? 'current' : 'normal'}`;
-    };
-
-    watch(width, (value) => {
-      if (value <= 0) {
-        onTimeout();
-        changeStep();
-      }
-    });
-
-    onMounted(startTimer);
-
-    return { step, width, statuses, quiz, quizzes, answers, statusText, checkAnswer, counterClasses };
-  },
+  return `quiz-counters__couter quiz-counters__couter--${counter === step.value ? 'current' : 'normal'}`;
 };
+
+// 选项乱序逻辑
+const shuffledAnswers = computed(() => {
+  return currentQuiz.value ? shuffleArray([...currentQuiz.value.items]) : [];
+});
+// 为什么浅拷贝，防止源数据混乱
+
+onMounted(async () => {
+  // 页面加载时，清空 localStorage 中的 score
+  localStorage.removeItem('score');
+  try {
+    const data = await getQuizzes();
+    quizzesList.value = shuffleArray(data);
+    isLoading.value = false;
+    startTimer();
+  } catch (error) {
+    console.error('获取测验失败:', error);
+  }
+});
 </script>
 
 <style src="./QuizView.scss" lang="scss" scoped />

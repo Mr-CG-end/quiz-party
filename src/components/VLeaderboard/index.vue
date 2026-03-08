@@ -34,9 +34,7 @@ export default {
     },
   },
 
-  setup(props) {
-    return { leaderboard: props.leaderboard };
-  },
+  setup() {},
 };
 </script>
 
