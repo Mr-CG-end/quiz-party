@@ -1,28 +1,42 @@
 <template>
   <VModal :show="isModalOpen" @on-close="closeModal">
-    <div class="character">
-      <div class="character__avatar-box">
-        <img :src="character?.image" :alt="character?.name" class="character__avatar" />
+    <div class="flex flex-col items-center">
+      <div class="relative overflow-hidden w-32 h-32 rounded-full border-3 border-primary">
+        <img :src="character?.image" :alt="character?.name" class="absolute top-0 left-0 w-full h-full object-cover" />
       </div>
 
-      <span class="character__name">{{ character?.name }}</span>
+      <span class="font-bold text-black text-2xl mt-8">{{ character?.name }}</span>
 
-      <p class="character__summary">
-        您成功获得了角色 <span class="character__summary-bold">«{{ character?.name }}»</span>！
+      <p class="text-center text-gray mt-6">
+        您成功获得了角色 <span class="font-bold text-black">«{{ character?.name }}»</span>！
         {{ character?.summary }}
       </p>
     </div>
 
-    <button class="action" @click="onCharacterSubmited">接受角色</button>
+    <button
+      class="w-full border-none outline-none cursor-pointer font-bold text-white text-sm mt-12 rounded-lg py-4 px-6 bg-primary border border-primary transition-opacity hover:opacity-90"
+      @click="onCharacterSubmited"
+    >
+      接受角色
+    </button>
   </VModal>
 
-  <DefaultLayout class="result-view">
-    <h1 class="result-view__title">结束了！</h1>
-    <span class="result-view__description">恭喜！您在本次测验中获得了 {{ score }} 分！</span>
+  <DefaultLayout class="flex flex-col min-h-screen items-center justify-center">
+    <h1 class="font-bold text-black text-[28px]">结束了！</h1>
+    <span class="text-gray mt-4">恭喜！您在本次测验中获得了 {{ score }} 分！</span>
 
-    <div class="result-view__actions">
-      <button class="result-view__show-results" @click="openModal">查看结果</button>
-      <RouterLink to="/quiz" class="result-view__retry">重试</RouterLink>
+    <div class="mt-14">
+      <button
+        class="border border-primary outline-none cursor-pointer font-bold text-white text-sm rounded-lg py-4 px-6 bg-primary transition-opacity hover:opacity-90"
+        @click="openModal"
+      >
+        查看结果
+      </button>
+      <RouterLink
+        to="/quiz"
+        class="font-bold text-sm text-primary ml-4 rounded-lg py-4 px-6 border border-primary transition-colors hover:bg-primary/10"
+        >重试</RouterLink
+      >
     </div>
   </DefaultLayout>
 </template>
@@ -92,4 +106,8 @@ const onCharacterSubmited = () => {
 };
 </script>
 
-<style src="./ResultView.scss" lang="scss" scoped />
+<style scoped>
+:deep(.modal) {
+  max-width: 24rem;
+}
+</style>

@@ -1,11 +1,18 @@
 <template>
   <DefaultLayout>
-    <header class="header">
-      <span class="header__text"> {{ isLogined ? `欢迎回来，${currentUser}` : '准备好来一场小测验了吗？' }}</span>
-      <button class="header__link" @click="handleStartClick">开始新测验</button>
+    <header class="flex p-6 items-center justify-between border-b border-gray-200">
+      <span class="font-bold text-black text-base">
+        {{ isLogined ? `欢迎回来，${currentUser}` : '准备好来一场小测验了吗？' }}</span
+      >
+      <button
+        class="font-bold text-white text-sm rounded-lg py-4 px-6 bg-primary cursor-pointer"
+        @click="handleStartClick"
+      >
+        开始新测验
+      </button>
     </header>
 
-    <VLeaderboard :leaderboard="leaderboard" class="leaderboard" />
+    <VLeaderboard :leaderboard="leaderboard" class="mt-8" />
     <UserModal :show="showLogin" @start="onUserModalStart" />
   </DefaultLayout>
 </template>
@@ -60,5 +67,3 @@ const onUserModalStart = () => {
   router.push('/quiz');
 };
 </script>
-
-<style src="./HomeView.scss" lang="scss" scoped />

@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { getLeaderboard } from '@/api/quiz';
 import type { LeaderboardItem } from '@/types';
+import { useUser } from '@/hooks/useUser';
 
 /**
  * 排行榜状态管理 Hook
@@ -30,6 +31,13 @@ export const useLeaderboard = () => {
    * 7. 备份数据：将最终合并结果存回 localStorage
    */
   const fetchLeaderboard = async () => {
+    const { currentUser } = useUser();
+
+    // 0. 如果没有用户名，清除本地排行榜缓存（避免匿名用户看到脏数据）
+    if (!currentUser.value) {
+      localStorage.removeItem('leaderboard');
+    }
+
     // 1. 获取本地
     const data = localStorage.getItem('leaderboard');
     const localData: LeaderboardItem[] = data ? JSON.parse(data) : [];

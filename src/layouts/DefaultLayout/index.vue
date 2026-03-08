@@ -1,5 +1,5 @@
 <template>
-  <main class="default-layout">
+  <main class="py-8 px-8 sm:py-[64px] sm:px-[128px]">
     <slot />
   </main>
 </template>
@@ -9,5 +9,3 @@ export default {
   name: 'DefaultLayout',
 };
 </script>
-
-<style src="./DefaultLayout.scss" lang="scss" scoped />
